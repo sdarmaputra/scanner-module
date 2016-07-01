@@ -7,6 +7,7 @@ from shutil import copyfile
 from docker import Client
 
 printLog = helper.printLog
+protocol = "http://"
 agentList = {
 		0: {'name': 'w3af0', 'address': '10.151.36.92:5000', 'running': 0},
 		1: {'name': 'w3af1', 'address': '10.151.36.92:5001', 'running': 0},
@@ -44,7 +45,7 @@ def startAgent():
 			docker_client.start(agent['name'])
 			agent['running'] = 1
 			printLog('Successfully running agent', agent['name'], '@', agent['address'])
-			return {'status': 'success', 'address': agent['address']}
+			return {'status': 'success', 'address': protocol+agent['address']}
 		counter += 1
 	if (counter == len(agentList)):
 		printLog('All agent in use. Can not start new task!')

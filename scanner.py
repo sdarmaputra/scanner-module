@@ -1,4 +1,5 @@
 import os
+import time
 from w3af_api_client import Connection, Scan
 import helper
 
@@ -17,13 +18,23 @@ def startScanner(conn, targetUrl):
 	scanProfile = file(scanProfilePath).read()
 	targetUrls = [targetUrl]
 
+	print scanProfile
+
 	printLog("")
 	printLog("Starting scanner for target ", targetUrl)
 	scan.start(scanProfile, targetUrls)
 
-	scan.get_urls()
-	scan.get_log()
-	scan.get_findings()
+	#scan.get_urls()
+	#scan.get_log()
+	# time.sleep(60)
+	# i = 0
+	# while (i < 5):
+	# 	status = scan.get_status()
+	# 	print status
+	# 	i = i + 1
+	# 	time.sleep(30)
+
+	# scan.get_findings()
 	return;
 
 def initTask(scannerUrl, targetUrl):
