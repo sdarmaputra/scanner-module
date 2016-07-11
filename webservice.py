@@ -46,6 +46,7 @@ def make_app():
 
 if __name__ == "__main__":
 	port = 8000
+	agentRunner.checkAgentAvailability()
 	agentRunner.stopAllAgent()
 	application = make_app()
 	application.listen(port)

@@ -4,7 +4,7 @@ from w3af_api_client import Connection, Scan
 import helper
 
 printLog = helper.printLog
-parent_dir = '/home/jiwa/tugasakhir/'
+parent_dir = '/home/kromatin/tugasakhir/'
 
 def initConnection(scannerUrl):
 	printLog("Initialize connection with scanner at ", scannerUrl)
