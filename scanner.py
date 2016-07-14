@@ -2,9 +2,10 @@ import os
 import time
 from w3af_api_client import Connection, Scan
 import helper
+from pprint import pprint
 
 printLog = helper.printLog
-parent_dir = '/home/kromatin/tugasakhir/'
+parent_dir = '/home/jiwa/tugasakhir/'
 
 def initConnection(scannerUrl):
 	printLog("Initialize connection with scanner at ", scannerUrl)
@@ -24,23 +25,41 @@ def startScanner(conn, targetUrl):
 	printLog("Starting scanner for target ", targetUrl)
 	scan.start(scanProfile, targetUrls)
 
-	#scan.get_urls()
-	#scan.get_log()
-	# time.sleep(60)
-	# i = 0
-	# while (i < 5):
-	# 	status = scan.get_status()
-	# 	print status
-	# 	i = i + 1
-	# 	time.sleep(30)
+	time.sleep(10)
+	scan.get_urls()
+	scan.get_log()
+	time.sleep(3)
+	
+	while True:
+		status = scan.get_status()
+		print "Running Status:", status['is_running']
+		if (status['is_running'] == False):
+			break
+		time.sleep(3)
 
-	# scan.get_findings()
-	return;
+	summary = scan.get_findings()
+	finalResult = {'results': {}}
+
+	for index in range(len(summary)):
+		currentSummary = summary[index].resource_data
+		tmp_result = { index: {
+				'targetUrl': currentSummary['url'],
+				'vulnerability': currentSummary['name'],
+				'longDescription': currentSummary['long_description'],
+				'description': currentSummary['desc'],
+				'severity': currentSummary['severity'],
+				'recommendation': currentSummary['fix_guidance'],
+				'references': currentSummary['references']
+			}}
+		if 'urls' in currentSummary:
+			tmp_result['targetUrls'] = currentSummary['urls']
+		finalResult['results'].update(tmp_result)
+	return finalResult
 
 def initTask(scannerUrl, targetUrl):
 	conn = initConnection(scannerUrl)
-	startScanner(conn, targetUrl)
-	return
+	result = startScanner(conn, targetUrl)
+	return result
 
 def main():
 	print "Please use this program as plug-in. Thanks!"

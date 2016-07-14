@@ -34,8 +34,8 @@ class Scanner(tornado.web.RequestHandler):
 		targetUrl = self.get_argument("target_url")
 		scannerUrl = self.get_argument("scanner_url")
 
-		scanner.initTask(scannerUrl, targetUrl)
-		self.write("finished")
+		result = scanner.initTask(scannerUrl, targetUrl)
+		self.write(result)
 
 def make_app():
 	printLog("Application started")
