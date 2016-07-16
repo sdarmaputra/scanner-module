@@ -6,7 +6,7 @@ from multiprocessing.pool import ThreadPool
 import sys
 import helper
 import agentRunner
-import scanner
+from scanner import Scanner
 
 printLog = helper.printLog
 _workers = ThreadPool(10)
@@ -18,6 +18,9 @@ def runBackground(function, callback, args=(), kwds={}):
 
 class Runner(tornado.web.RequestHandler):
 	def get(self, *args, **argv):
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+		self.set_header("Access-Control-Allow-Methods", "POST, GET")
 		if (args[0] == None):
 			res = agentRunner.startAgent()
 			self.write(res)
@@ -25,29 +28,44 @@ class Runner(tornado.web.RequestHandler):
 			self.write(args[0])
 
 	def delete(self, *args, **argv):
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+		self.set_header("Access-Control-Allow-Methods", "POST, GET")
 		if (args[0] != None):
 			res = agentRunner.stopByAddress(args[0])
 			self.write(res)
 
-class Scanner(tornado.web.RequestHandler):
+class ScannerAgent(tornado.web.RequestHandler):
+	@tornado.web.asynchronous
 	def post(self, *args, **argv):
+		scenarioId = self.get_argument("scenario_id")
+		applicationName = self.get_argument("application_name")
 		targetUrl = self.get_argument("target_url")
 		scannerUrl = self.get_argument("scanner_url")
 
-		result = scanner.initTask(scannerUrl, targetUrl)
-		self.write(result)
+		currScanner = Scanner() 
+		runBackground(currScanner.initTask, self.on_complete, (scenarioId, applicationName, scannerUrl, targetUrl))
+
+	def on_complete(self, res):
+		self.set_header("Access-Control-Allow-Origin", "*")
+		self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+		self.set_header("Access-Control-Allow-Methods", "POST, GET")
+		print res
+		self.write(res)
+		self.finish()
 
 def make_app():
 	printLog("Application started")
 	return tornado.web.Application([
 		(r"/run/?([0-9.:]+)?", Runner),
-		(r"/scan/?([0-9.:]+)?", Scanner)
+		(r"/scan/?([0-9.:]+)?", ScannerAgent)
 	])
 
 if __name__ == "__main__":
 	port = 8000
 	agentRunner.checkAgentAvailability()
 	agentRunner.stopAllAgent()
+	agentRunner.checkAgentAvailability()
 	application = make_app()
 	application.listen(port)
 	printLog('Listening on port ' + str(port))

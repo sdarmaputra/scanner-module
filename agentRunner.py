@@ -42,16 +42,22 @@ def stopAllAgent():
 	for key, agent in agentList.iteritems():
 		printLog('Stoping agent', agent['name'], '@', agent['address'])
 		docker_client.stop(agent['name'])
+		printLog('Removing agent', agent['name'], '@', agent['address'])
+		docker_client.remove_container(agent['name'])
 		agent['running'] = 0
 	return
 
 def stopByAddress(address):
 	counter = 0
+	address = address.replace(protocol, "")
 	for key, agent in agentList.iteritems():
 		if (agent['address'] == address):
 			printLog('Stoping agent', agent['name'], '@', agent['address'])
 			docker_client.stop(agent['name'])
+			printLog('Removing agent', agent['name'], '@', agent['address'])
+			docker_client.remove_container(agent['name'])
 			agent['running'] = 0
+			createAgentContainer(agent['name'], agent['w3afPort'], agent['supervisorPort'])
 			return {'status': 'success', 'address': agent['address'], 'state': 'stopped'}
 		counter += 1
 	if (counter == len(agentList)):
@@ -60,9 +66,12 @@ def stopByAddress(address):
 
 def startAgent():
 	counter = 0
+	containers = docker_client.containers(all=True)
 	for key, agent in agentList.iteritems():
 		if (agent['running'] == 0):
 			printLog('Starting agent', agent['name'], '@', agent['address'])
+			if not any(container['Names'][0] == ('/' + agent['name']) for container in containers):
+				createAgentContainer(agent['name'], agent['w3afPort'], agent['supervisorPort'])
 			docker_client.start(agent['name'])
 			agent['running'] = 1
 			printLog('Successfully running agent', agent['name'], '@', agent['address'])

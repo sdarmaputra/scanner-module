@@ -7,7 +7,6 @@ from shutil import copyfile
 from docker import Client
 
 printLog = helper.printLog
-
 docker_client = Client(base_url = 'unix://var/run/docker.sock')
 
 # Pull or clone application from VCS based on availability at local server
