@@ -12,11 +12,12 @@ printLog = helper.printLog
 parent_dir = '/home/jiwa/tugasakhir/'
 
 class ResultRetriever(threading.Thread):
-	def __init__(self, scenarioId, applicationName, conn, scannerUrl, targetUrl, scan):
+	def __init__(self, scenarioId, applicationName, runningToken, conn, scannerUrl, targetUrl, scan):
 		printLog("Thread for", applicationName, "created")
 		threading.Thread.__init__(self)
 		self.scenarioId = scenarioId
 		self.name = applicationName
+		self.runningToken = runningToken
 		self.conn = conn
 		self.targetUrl = targetUrl
 		self.scannerUrl = scannerUrl
@@ -24,11 +25,20 @@ class ResultRetriever(threading.Thread):
 		print "scanner", self.scannerUrl
 
 	def run(self):
-		postUrl = "http://10.151.36.30:3000/runner/run/"+self.scenarioId
+		postUrl = "http://10.151.36.30:3000/runner/storeResult/"+self.scenarioId
 		printLog("Running thread task")
 		results = retrieveResults(self.conn, self.targetUrl, self.scan)
+
+		payloads = {
+			'applicationName': self.name,
+			'scenarioId': self.scenarioId,
+			'targetUrl': self.targetUrl,
+			'scannerUrl': self.scannerUrl,
+			'runningToken': self.runningToken,
+			'results': json.dumps(results['results'])
+		}
 		
-		req = requests.post(postUrl, data={'results': json.dumps(results['results'])})
+		req = requests.post(postUrl, data=payloads)
 		printLog(req.text)
 		printLog(req.status_code)
 
@@ -44,10 +54,25 @@ class Scanner(object):
 	def initConnection(self, scannerUrl):
 		printLog("Initialize connection with scanner at ", scannerUrl)
 		conn = Connection(scannerUrl)
-		printLog("Version: ", conn.get_version())
+		while True:
+			try:
+				print "trying"
+				ver = conn.get_version()
+				if (ver is not None):
+					printLog("Version: ", conn.get_version())
+					break
+				else:
+					pass			
+			except Exception, e:
+				pass
+			else:
+				pass
+			finally:
+				pass
+		
 		return conn
 
-	def startScanner(self, scenarioId, applicationName, conn, scannerUrl, targetUrl):
+	def startScanner(self, scenarioId, applicationName, runningToken, conn, scannerUrl, targetUrl):
 		scan = Scan(conn)
 		scanProfilePath = os.path.join(parent_dir, "w3af/profiles/OWASP_TOP10.pw3af")
 		scanProfile = file(scanProfilePath).read()
@@ -64,14 +89,14 @@ class Scanner(object):
 		scan.get_log()
 		time.sleep(3)
 
-		retrieverThread = ResultRetriever(scenarioId, applicationName, conn, scannerUrl, targetUrl, scan)
+		retrieverThread = ResultRetriever(scenarioId, applicationName, runningToken, conn, scannerUrl, targetUrl, scan)
 		retrieverThread.start()
 		
-		return {'status': "success", 'state': "running"}
+		return {'status': "success", 'state': "running", 'token': runningToken, 'scenarioId':scenarioId, 'applicationName': applicationName}
 
-	def initTask(self, scenarioId, applicationName, scannerUrl, targetUrl):
+	def initTask(self, scenarioId, applicationName, runningToken, scannerUrl, targetUrl):
 		conn = self.initConnection(scannerUrl)
-		result = self.startScanner(scenarioId, applicationName, conn, scannerUrl, targetUrl)		
+		result = self.startScanner(scenarioId, applicationName, runningToken, conn, scannerUrl, targetUrl)		
 		return result
 
 

@@ -40,11 +40,12 @@ class ScannerAgent(tornado.web.RequestHandler):
 	def post(self, *args, **argv):
 		scenarioId = self.get_argument("scenario_id")
 		applicationName = self.get_argument("application_name")
+		runningToken = self.get_argument("running_token")
 		targetUrl = self.get_argument("target_url")
 		scannerUrl = self.get_argument("scanner_url")
 
 		currScanner = Scanner() 
-		runBackground(currScanner.initTask, self.on_complete, (scenarioId, applicationName, scannerUrl, targetUrl))
+		runBackground(currScanner.initTask, self.on_complete, (scenarioId, applicationName, runningToken, scannerUrl, targetUrl))
 
 	def on_complete(self, res):
 		self.set_header("Access-Control-Allow-Origin", "*")
