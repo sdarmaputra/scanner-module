@@ -9,10 +9,11 @@ from docker import Client
 printLog = helper.printLog
 protocol = "http://"
 agentList = {
-		0: {'name': 'w3af0', 'address': '10.151.36.92:5000', 'running': 0, 'w3afPort': '5000', 'supervisorPort': '9000'},
-		1: {'name': 'w3af1', 'address': '10.151.36.92:5001', 'running': 0, 'w3afPort': '5001', 'supervisorPort': '9001'},
-		2: {'name': 'w3af2', 'address': '10.151.36.92:5002', 'running': 0, 'w3afPort': '5002', 'supervisorPort': '9002'},
-		3: {'name': 'w3af3', 'address': '10.151.36.92:5003', 'running': 0, 'w3afPort': '5003', 'supervisorPort': '9003'},
+		0: {'name': 'w3af0', 'address': '10.151.36.92:11000', 'running': 0, 'w3afPort': '11000', 'supervisorPort': '9000'},
+		1: {'name': 'w3af1', 'address': '10.151.36.92:11001', 'running': 0, 'w3afPort': '11001', 'supervisorPort': '9001'},
+		2: {'name': 'w3af2', 'address': '10.151.36.92:11002', 'running': 0, 'w3afPort': '11002', 'supervisorPort': '9002'},
+		3: {'name': 'w3af3', 'address': '10.151.36.92:11003', 'running': 0, 'w3afPort': '11003', 'supervisorPort': '9003'},
+		4: {'name': 'w3af4', 'address': '10.151.36.92:11004', 'running': 0, 'w3afPort': '11004', 'supervisorPort': '9004'}
 	}
 
 docker_client = Client(base_url = 'unix://var/run/docker.sock')

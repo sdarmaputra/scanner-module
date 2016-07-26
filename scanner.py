@@ -53,44 +53,80 @@ class Scanner(object):
 
 	def initConnection(self, scannerUrl):
 		printLog("Initialize connection with scanner at ", scannerUrl)
-		conn = Connection(scannerUrl)
+		
 		while True:
 			try:
-				print "trying"
+				printLog("Trying initialization for scanner:", scannerUrl)
+				conn = Connection(scannerUrl)
 				ver = conn.get_version()
 				if (ver is not None):
 					printLog("Version: ", conn.get_version())
+					printLog("Scanner initialized: ", scannerUrl)
 					break
 				else:
-					pass			
+					pass
 			except Exception, e:
 				pass
 			else:
 				pass
 			finally:
 				pass
+			time.sleep(3)		
 		
 		return conn
 
 	def startScanner(self, scenarioId, applicationName, runningToken, conn, scannerUrl, targetUrl):
-		scan = Scan(conn)
 		scanProfilePath = os.path.join(parent_dir, "w3af/profiles/OWASP_TOP10.pw3af")
 		scanProfile = file(scanProfilePath).read()
 		targetUrls = [targetUrl]
 
-		print scanProfile
-
-		printLog("")
 		printLog("Starting scanner for target ", targetUrl)
+		scan = Scan(conn)
 		scan.start(scanProfile, targetUrls)
-
+		
 		time.sleep(10)
-		scan.get_urls()
-		scan.get_log()
-		time.sleep(3)
 
+		# Check if scanner has running
+		printLog("Checking running status for", targetUrl)
+		while True:
+			try:
+				status = scan.get_status()
+				printLog("Running Status:", status['is_running'], "for target:", targetUrl)
+				if (status['is_running'] == True):
+					printLog("scan started for target: ", targetUrl)
+					break
+				else:
+					pass
+			except Exception as e:
+				printLog("Target ", targetUrl, "error occured: ", e)
+				pass
+			else:
+				pass
+			finally:
+				pass
+			time.sleep(3)
+
+		printLog("starting thread for", targetUrl)
 		retrieverThread = ResultRetriever(scenarioId, applicationName, runningToken, conn, scannerUrl, targetUrl, scan)
-		retrieverThread.start()
+
+		# Check if thread has been started
+		while True:
+			try:
+				printLog("trying to start thread for", targetUrl)
+				retrieverThread.start()
+				printLog("thread for target", targetUrl, " live status: ", retrieverThread.isAlive())
+				if not retrieverThread.isAlive():
+					pass			
+				else:
+					break;
+			except Exception, e:
+				pass
+			else:
+				pass
+			finally:
+				pass
+			time.sleep(3)
+
 		
 		return {'status': "success", 'state': "running", 'token': runningToken, 'scenarioId':scenarioId, 'applicationName': applicationName}
 
