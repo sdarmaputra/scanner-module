@@ -51,7 +51,6 @@ class ScannerAgent(tornado.web.RequestHandler):
 		self.set_header("Access-Control-Allow-Origin", "*")
 		self.set_header("Access-Control-Allow-Headers", "x-requested-with")
 		self.set_header("Access-Control-Allow-Methods", "POST, GET")
-		print res
 		self.write(res)
 		self.finish()
 

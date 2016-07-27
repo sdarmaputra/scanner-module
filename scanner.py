@@ -22,7 +22,6 @@ class ResultRetriever(threading.Thread):
 		self.targetUrl = targetUrl
 		self.scannerUrl = scannerUrl
 		self.scan = scan
-		print "scanner", self.scannerUrl
 
 	def run(self):
 		postUrl = "http://10.151.36.30:3000/runner/storeResult/"+self.scenarioId
@@ -82,9 +81,28 @@ class Scanner(object):
 
 		printLog("Starting scanner for target ", targetUrl)
 		scan = Scan(conn)
-		scan.start(scanProfile, targetUrls)
+		try:
+			scan.start(scanProfile, targetUrls)
+		except Exception, e:
+			printLog("Error while starting scanner for target", targetUrl, ":", e)
+		else:
+			pass
+		finally:
+			pass
+
+		printLog("Checking status for target", targetUrl)
+		while True:
+			try:
+				stat = scan.get_status()
+				printLog("Stat for target", targetUrl, ":", stat)
+				if stat is not None:
+					break
+				
+			except Exception, e:
+				printLog("Stat for target", targetUrl, ":", e)
+				pass
+			time.sleep(3)
 		
-		time.sleep(10)
 
 		# Check if scanner has running
 		printLog("Checking running status for", targetUrl)
@@ -141,11 +159,11 @@ def retrieveResults(conn, targetUrl, scan):
 	while True:
 		try:
 			status = scan.get_status()
-			print "Running Status:", status['is_running'], "for target:", targetUrl
+			printLog("Running Status:", status['is_running'], "for target:", targetUrl)
 			if (status['is_running'] == False):
 				break
 		except Exception as e:
-			print "Target ", targetUrl, "error occured: ", e
+			printLog("Target ", targetUrl, "error occured: ", e)
 			pass
 		time.sleep(3)
 
